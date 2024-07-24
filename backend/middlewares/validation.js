@@ -20,7 +20,7 @@ const loginValidation = async (req, res, next) => {
     password: password
   });
   if (!login.success) {
-    return res.status(401).json({
+    return res.status(403).json({
       msg: "Send the input in correct format"
     });
   }
@@ -37,7 +37,7 @@ const signupValidation = async (req, res, next) => {
     password: password
   });
   if (!signup.success) {
-    return res.status(401).json({
+    return res.status(403).json({
       msg: "Send the input in correct format"
     });
   }
