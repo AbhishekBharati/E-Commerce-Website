@@ -1,5 +1,8 @@
 import { useState } from "react";
 import axios from "axios";
+import { useSetRecoilState } from "recoil";
+import { authenticationState } from "../state/atoms/AuthenticationState";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [formValues, setFormValues] = useState({
@@ -10,7 +13,10 @@ const Login = () => {
   const [errors, setErrors] = useState({
     email: "",
     password: ""
-  })
+  });
+
+  const setIsAuthenticated = useSetRecoilState(authenticationState);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -50,6 +56,8 @@ const Login = () => {
       }
 
       localStorage.setItem('token', response.data.token);
+      setIsAuthenticated(true);
+      navigate("/");
     } catch (err) {
       console.log(err);
       alert("Something went wrong on server side please try again later")
