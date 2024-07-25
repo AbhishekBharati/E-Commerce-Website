@@ -1,8 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useSetRecoilState } from "recoil";
 import { authenticationState } from "../state/atoms/AuthenticationState";
-import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [formValues, setFormValues] = useState({
@@ -15,7 +15,8 @@ const Login = () => {
     password: ""
   });
 
-  const setIsAuthenticated = useSetRecoilState(authenticationState);
+  const setAuthentication = useSetRecoilState(authenticationState);
+
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -27,7 +28,6 @@ const Login = () => {
     if (name == "email" && !/\S+@\S+\.\S+/.test(value)) {
       error = "Invalid Email Address."
     }
-    setErrors({ ...errors, [name]: error });
 
     if (name == "password" && value.length < 4) {
       error = "Password must be atleast 4 char long"
@@ -40,33 +40,31 @@ const Login = () => {
     const loginData = { email: formValues.email, password: formValues.password };
     try {
       const response = await axios.post("http://localhost:3001/auth/loginCustomer", loginData);
-      if (response.status == 500) {
-        alert("Something went wrong on Server side please try again later");
-        return;
-      }
-
-      if (response.status == 401) {
-        alert("Email or Password isn't correct.");
-        return;
-      }
-
-      if (response.status == 403) {
-        alert("Email or Password isn't in the valid format");
-        return;
-      }
-
       localStorage.setItem('token', response.data.token);
-      setIsAuthenticated(true);
+      setAuthentication(true);
       navigate("/");
     } catch (err) {
-      console.log(err);
-      alert("Something went wrong on server side please try again later")
+      if (err.response) {
+        // Handle known err messages :-
+        if (err.response.status === 401) {
+          alert("Email or Password isn't correct");
+        } else if (err.response.status === 403) {
+          alert("Email or Password isn't in the valid format");
+        } else if (err.response.status === 500) {
+          alert("Something went wrong on server side, please try again later");
+        } else {
+          alert("An unknown error occurred, please try again later");
+        }
+      } else {
+        console.log(err);
+        alert("Something went wrong on server side please try again later");
+      }
     }
 
   }
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
+    <div className="flex items-center justify-center  bg-gray-100">
+      <div className="bg-white p-8 ">
         <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
@@ -99,7 +97,7 @@ const Login = () => {
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring focus:ring-opacity-50 active:bg-blue-700 transition duration-150"
+            className="w-full bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 active:bg-blue-700 focus:outline-none focus:ring focus:ring-opacity-50 transition duration-150"
           >
             Login
           </button>
